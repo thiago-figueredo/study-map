@@ -11,6 +11,7 @@ class QuestionResource extends BaseResource
         return $this->formatToArray([
             'body' => $this->body,
             'answers' => $this->whenLoaded('answers', AnswerResource::collection($this->answers)),
+            'tags' => $this->whenLoaded('tags', TagResource::collection($this->tags)->resolve()),
         ]);
     }
 
@@ -18,6 +19,8 @@ class QuestionResource extends BaseResource
     {
         return [
             'body',
+            'answers' => ['*' => AnswerResource::jsonStructure()],
+            'tags' => ['*' => TagResource::jsonStructure()],
             ...parent::jsonStructure(),
         ];
     }

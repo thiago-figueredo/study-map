@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class AnswerResource extends BaseResource
+class TagResource extends BaseResource
 {
     /**
      * Transform the resource into an array.
@@ -14,19 +14,15 @@ class AnswerResource extends BaseResource
     public function toArray(Request $request): array
     {
         return $this->formatToArray([
-            'body' => $this->body,
-            'is_correct' => $this->is_correct,
-            'question_id' => $this->question_id,
-        ]);
+            'name' => $this->name,
+        ], excluded: ['created_at', 'updated_at', 'deleted_at']);
     }
 
     public static function jsonStructure(): array
     {
         return [
-            'body',
-            'is_correct',
-            'question_id',
-            ...parent::jsonStructure(),
+            'id',
+            'name',
         ];
     }
 }

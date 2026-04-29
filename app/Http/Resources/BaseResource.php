@@ -22,15 +22,17 @@ class BaseResource extends JsonResource
         ];
     }
 
-    public function formatToArray(array $attributes): array
+    public function formatToArray(array $attributes, array $excluded = []): array
     {
-        return [
+        $attributes = [
             'id' => $this->id,
             ...$attributes,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'deleted_at' => $this->deleted_at ? $this->deleted_at->format('Y-m-d H:i:s') : null,
         ];
+
+        return collect($attributes)->filter(fn ($_, $key) => !in_array($key, $excluded))->toArray();
     }
     
     public static function jsonStructure(): array

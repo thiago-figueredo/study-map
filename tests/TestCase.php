@@ -6,6 +6,7 @@ use App\Models\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -17,7 +18,7 @@ abstract class TestCase extends BaseTestCase
         $this->assertDatabaseCount($model, 1);
     }
 
-    protected function assertDatabaseHasMany(string $model, array $attributes): void
+    protected function assertDatabaseHasMany(string $model, array|Collection $attributes): void
     {
         foreach ($attributes as $attribute) {
             $this->assertDatabaseHas($model, $attribute);
@@ -34,7 +35,7 @@ abstract class TestCase extends BaseTestCase
      * @param  string|null  $connection
      * @return $this
      */
-    protected function assertDatabaseHas($table, array $data = [], $connection = null): self {
+    protected function assertDatabaseHas($table, array|Collection $data = [], $connection = null): self {
         $attributes = Arr::only($data, (new $table)->getFillable() ?? []);
         return parent::assertDatabaseHas($table, $attributes, $connection);
     }

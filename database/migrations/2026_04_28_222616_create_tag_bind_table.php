@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('tag_id')->constrained('tags');
-            $table->foreignId('binded_id')->constrained('decks');
+            $table->morphs('binded');
 
             $table->timestamps();
             $table->softDeletes();

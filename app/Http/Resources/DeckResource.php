@@ -14,6 +14,10 @@ class DeckResource extends BaseResource
                 'questions',
                 QuestionResource::collection($this->questions)->resolve()
             ),
+            'tags' => $this->whenLoaded(
+                'tags',
+                TagResource::collection($this->tags)->resolve()
+            ),
         ]);
     }
 
