@@ -21,8 +21,14 @@ class CreateDeckTest extends TestCase
 
         $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJson($this->expectedJson($body))
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
+            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJson([
+                'data' => [
+                    'name' => $body['name'],
+                    'questions' => [],
+                    'tags' => [],
+                ]
+            ]);
 
         $this->assertDatabaseHasOne(Deck::class, $body);
     }
@@ -39,8 +45,14 @@ class CreateDeckTest extends TestCase
 
         $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJson($this->expectedJson($body))
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
+            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJson([
+                'data' => [
+                    'name' => $body['name'],
+                    'questions' => $body['questions'],
+                    'tags' => [],
+                ]
+            ]);
 
         $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
         $this->assertDatabaseHasMany(Question::class, $body['questions']);
@@ -70,8 +82,24 @@ class CreateDeckTest extends TestCase
 
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJson($this->expectedJson($body))
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
+            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJson([
+                'data' => [
+                    'name' => $body['name'],
+                    'questions' => [
+                        [
+                            'body' => $body['questions'][0]['body'],
+                            'answers' => $body['questions'][0]['answers'],
+                            'tags' => [],
+                        ],
+                        [
+                            'body' => $body['questions'][1]['body'],
+                            'answers' => $body['questions'][1]['answers'],
+                            'tags' => [],
+                        ],
+                    ],
+                ]
+            ]);
 
         $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
 
@@ -82,16 +110,28 @@ class CreateDeckTest extends TestCase
 
         $this->assertDatabaseHasMany(
             Answer::class,
-            collect($body['questions'])
-                ->flatMap(function ($question) use ($response) {
-                    return collect($question['answers'])->map(fn ($answer) => [
-                        ...$answer,
-                        'question_id' => collect($response->json('data.questions'))
-                            ->firstWhere('body', $question['body'])
-                            ['id'],
-                    ]);
-                })
-                ->toArray()
+            [
+                [
+                    'body' => $body['questions'][0]['answers'][0]['body'],
+                    'is_correct' => $body['questions'][0]['answers'][0]['is_correct'],
+                    'question_id' => $response->json('data.questions.0.id'),
+                ],
+                [
+                    'body' => $body['questions'][0]['answers'][1]['body'],
+                    'is_correct' => $body['questions'][0]['answers'][1]['is_correct'],
+                    'question_id' => $response->json('data.questions.0.id'),
+                ],
+                [
+                    'body' => $body['questions'][1]['answers'][0]['body'],
+                    'is_correct' => $body['questions'][1]['answers'][0]['is_correct'],
+                    'question_id' => $response->json('data.questions.1.id'),
+                ],
+                [
+                    'body' => $body['questions'][1]['answers'][1]['body'],
+                    'is_correct' => $body['questions'][1]['answers'][1]['is_correct'],
+                    'question_id' => $response->json('data.questions.1.id'),
+                ],
+            ]
         );
     }
 
@@ -104,7 +144,14 @@ class CreateDeckTest extends TestCase
         
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJson($this->expectedJson($body))
+            ->assertJson([
+                'data' => [
+                    'name' => $body['name'],
+                    'tags' => collect($body['tags'])
+                        ->map(fn ($name) => compact('name'))
+                        ->toArray(),
+                ]
+            ])
             ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
 
         $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['tags']));
@@ -138,8 +185,28 @@ class CreateDeckTest extends TestCase
 
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJson($this->expectedJson($body))
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
+            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJson([
+                'data' => [
+                    'name' => $body['name'],
+                    'questions' => [
+                        [
+                            'body' => $body['questions'][0]['body'],
+                            'answers' => [],
+                            'tags' => collect($body['questions'][0]['tags'])
+                                ->map(fn ($name) => compact('name'))
+                                ->toArray(),
+                        ],
+                        [
+                            'body' => $body['questions'][1]['body'],
+                            'answers' => [],
+                            'tags' => collect($body['questions'][1]['tags'])
+                                ->map(fn ($name) => compact('name'))
+                                ->toArray(),
+                        ],
+                    ],
+                ]
+            ]);
 
         $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
 
@@ -150,46 +217,28 @@ class CreateDeckTest extends TestCase
 
         $this->assertDatabaseHasMany(
             TagBind::class,
-            collect($body['questions'])
-                ->flatMap(function ($question) use ($response) {
-                    return collect($question['tags'] ?? [])->map(fn ($tag) => [
-                            'tag_id' => Tag::where('name', $tag)->value('id'),
-                            'binded_type' => Question::class,
-                            'binded_id' => collect($response->json('data.questions'))
-                                ->firstWhere('body', $question['body'])
-                                ['id'],
-                        ]);
-                    })
-                    ->toArray()
+            [
+                [
+                    'tag_id' => Tag::where('name', $body['questions'][0]['tags'][0])->value('id'),
+                    'binded_type' => Question::class,
+                    'binded_id' => $response->json('data.questions.0.id'),
+                ],
+                [
+                    'tag_id' => Tag::where('name', $body['questions'][0]['tags'][1])->value('id'),
+                    'binded_type' => Question::class,
+                    'binded_id' => $response->json('data.questions.0.id'),
+                ],
+                [
+                    'tag_id' => Tag::where('name', $body['questions'][1]['tags'][0])->value('id'),
+                    'binded_type' => Question::class,
+                    'binded_id' => $response->json('data.questions.1.id'),
+                ],
+                [
+                    'tag_id' => Tag::where('name', $body['questions'][1]['tags'][1])->value('id'),
+                    'binded_type' => Question::class,
+                    'binded_id' => $response->json('data.questions.1.id'),
+                ],
+            ]
         );
-    }
-
-    private function expectedJson(array $body): array
-    {
-        $questions = isset($body['questions'])
-            ? collect($body['questions'])->map(function (array $question): array {
-                if (!isset($question['tags'])) {
-                    return $question;
-                }
-
-                return [
-                    ...$question,
-                    'tags' => collect($question['tags'])->map(fn (string $name) => [
-                        'id' => Tag::where('name', $name)->value('id'),
-                        'name' => $name,
-                    ])->all(),
-                ];
-            })->all()
-            : [];
-
-        return [
-            'data' => [
-                'name' => $body['name'],
-                'questions' => $questions,
-                'tags' => isset($body['tags'])
-                    ? collect($body['tags'])->map(fn (string $name) => compact('name'))->toArray()
-                    : [],
-            ],
-        ];
     }
 }

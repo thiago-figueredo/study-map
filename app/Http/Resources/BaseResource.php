@@ -18,7 +18,7 @@ class BaseResource extends JsonResource
             'id' => $this->id,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'deleted_at' => $this->deleted_at ? $this->deleted_at->format('Y-m-d H:i:s') : null,
+            'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -29,7 +29,7 @@ class BaseResource extends JsonResource
             ...$attributes,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'deleted_at' => $this->deleted_at ? $this->deleted_at->format('Y-m-d H:i:s') : null,
+            'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
         ];
 
         return collect($attributes)->filter(fn ($_, $key) => !in_array($key, $excluded))->toArray();

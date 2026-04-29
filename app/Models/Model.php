@@ -12,8 +12,8 @@ class Model extends EloquentModel
     use HasTimestamps;
     use HasFactory;
     
-    public static function make(): static
+    public static function make(array $attributes = []): static
     {
-        return new static();
+        return new static($attributes);
     }
 }
