@@ -1,27 +1,27 @@
 <?php
 
-namespace Tests\Feature\Deck;
+namespace Tests\Feature\Quiz;
 
-use App\Http\Resources\DeckResource;
+use App\Http\Resources\QuizResource;
 use App\Models\Answer;
-use App\Models\Deck;
 use App\Models\Question;
+use App\Models\Quiz;
 use App\Models\Tag;
 use App\Models\TagBind;
 use Illuminate\Support\Arr;
 use Tests\TestCase;
 
-class CreateDeckTest extends TestCase
+class CreateQuizTest extends TestCase
 {
-    const url = '/api/decks';
+    const url = '/api/quizzes';
 
-    public function test_create_deck_only(): void
+    public function test_create_quiz_only(): void
     {
-        $body = ['name' => 'Test Deck'];
+        $body = ['name' => 'Test Quiz'];
 
         $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJsonStructure(['data' => QuizResource::jsonStructure()])
             ->assertJson([
                 'data' => [
                     'name' => $body['name'],
@@ -30,13 +30,13 @@ class CreateDeckTest extends TestCase
                 ]
             ]);
 
-        $this->assertDatabaseHasOne(Deck::class, $body);
+        $this->assertDatabaseHasOne(Quiz::class, $body);
     }
 
-    public function test_create_deck_with_questions_without_answers(): void
+    public function test_create_quiz_with_questions_without_answers(): void
     {
         $body = [
-            'name' => 'Test Deck',
+            'name' => 'Test Quiz',
             'questions' => [
                 ['body' => 'What is the capital of France?'],
                 ['body' => 'What is the capital of Germany?'],
@@ -45,7 +45,7 @@ class CreateDeckTest extends TestCase
 
         $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJsonStructure(['data' => QuizResource::jsonStructure()])
             ->assertJson([
                 'data' => [
                     'name' => $body['name'],
@@ -54,14 +54,14 @@ class CreateDeckTest extends TestCase
                 ]
             ]);
 
-        $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
+        $this->assertDatabaseHasOne(Quiz::class, Arr::except($body, ['questions']));
         $this->assertDatabaseHasMany(Question::class, $body['questions']);
     }
 
-    public function test_create_deck_with_questions_and_multiple_answers(): void
-    {   
+    public function test_create_quiz_with_questions_and_multiple_answers(): void
+    {
         $body = [
-            'name' => 'Test Deck',
+            'name' => 'Test Quiz',
             'questions' => [
                 [
                     'body' => 'What is the capital of France?',
@@ -82,7 +82,7 @@ class CreateDeckTest extends TestCase
 
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJsonStructure(['data' => QuizResource::jsonStructure()])
             ->assertJson([
                 'data' => [
                     'name' => $body['name'],
@@ -101,7 +101,7 @@ class CreateDeckTest extends TestCase
                 ]
             ]);
 
-        $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
+        $this->assertDatabaseHasOne(Quiz::class, Arr::except($body, ['questions']));
 
         $this->assertDatabaseHasMany(
             Question::class,
@@ -135,13 +135,13 @@ class CreateDeckTest extends TestCase
         );
     }
 
-    public function test_create_deck_with_tags(): void
+    public function test_create_quiz_with_tags(): void
     {
         $body = [
-            'name' => 'Test Deck',
+            'name' => 'Test Quiz',
             'tags' => ['Tag 1', 'Tag 2'],
         ];
-        
+
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
             ->assertJson([
@@ -152,9 +152,9 @@ class CreateDeckTest extends TestCase
                         ->toArray(),
                 ]
             ])
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()]);
+            ->assertJsonStructure(['data' => QuizResource::jsonStructure()]);
 
-        $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['tags']));
+        $this->assertDatabaseHasOne(Quiz::class, Arr::except($body, ['tags']));
 
         $this->assertDatabaseHasMany(
             Tag::class,
@@ -167,16 +167,16 @@ class CreateDeckTest extends TestCase
                 ->map(fn (string $tag) => [
                     'tag_id' => Tag::where('name', $tag)->value('id'),
                     'binded_id' => $response->json('data.id'),
-                    'binded_type' => Deck::class,
+                    'binded_type' => Quiz::class,
                 ])
                 ->toArray()
         );
     }
 
-    public function test_create_deck_with_tagged_questions(): void
+    public function test_create_quiz_with_tagged_questions(): void
     {
         $body = [
-            'name' => 'Test Deck',
+            'name' => 'Test Quiz',
             'questions' => [
                 ['body' => 'What is the capital of France?', 'tags' => ['Tag 1', 'Tag 2']],
                 ['body' => 'What is the capital of Germany?', 'tags' => ['Tag 2', 'Tag 3']],
@@ -185,7 +185,7 @@ class CreateDeckTest extends TestCase
 
         $response = $this->postJson(self::url, $body)
             ->assertCreated()
-            ->assertJsonStructure(['data' => DeckResource::jsonStructure()])
+            ->assertJsonStructure(['data' => QuizResource::jsonStructure()])
             ->assertJson([
                 'data' => [
                     'name' => $body['name'],
@@ -208,7 +208,7 @@ class CreateDeckTest extends TestCase
                 ]
             ]);
 
-        $this->assertDatabaseHasOne(Deck::class, Arr::except($body, ['questions']));
+        $this->assertDatabaseHasOne(Quiz::class, Arr::except($body, ['questions']));
 
         $this->assertDatabaseHasMany(
             Question::class,

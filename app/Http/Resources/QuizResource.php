@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class DeckResource extends BaseResource
+class QuizResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

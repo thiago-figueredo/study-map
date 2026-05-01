@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('body', 255);
-            $table->foreignId('deck_id')->constrained('decks');
+            $table->foreignId('quiz_id')->constrained('quizzes');
 
             $table->timestamps();
             $table->softDeletes();

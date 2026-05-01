@@ -10,8 +10,8 @@ class Tag extends Model
         'name',
     ];
 
-    public function decks(): MorphToMany
+    public function quizzes(): MorphToMany
     {
-        return $this->morphedByMany(Deck::class, 'binded', 'tag_bind');
+        return $this->morphedByMany(Quiz::class, 'binded', 'tag_bind');
     }
 }

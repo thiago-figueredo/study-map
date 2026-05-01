@@ -6,7 +6,7 @@ use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
-class Deck extends Model
+class Quiz extends Model
 {
     protected $fillable = [
         'name',

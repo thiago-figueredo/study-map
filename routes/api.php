@@ -1,7 +1,10 @@
 <?php
 
-use App\Http\Controllers\DeckController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/decks', [DeckController::class, 'index']);
-Route::post('/decks', [DeckController::class, 'store']);
+Route::get('/quizzes', [QuizController::class, 'index']);
+Route::post('/quizzes', [QuizController::class, 'store']);
+
+Route::post('/reviews', ReviewController::class);

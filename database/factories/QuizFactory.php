@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Deck;
+use App\Models\Quiz;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Deck>
+ * @extends Factory<Quiz>
  */
-class DeckFactory extends Factory
+class QuizFactory extends Factory
 {
     /**
      * Define the model's default state.

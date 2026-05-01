@@ -3,31 +3,31 @@
 namespace App\Services;
 
 use App\Models\Answer;
-use App\Models\Deck;
 use App\Models\Question;
+use App\Models\Quiz;
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 
-class DeckService
+class QuizService
 {
-    public function create(array $data): Deck
+    public function create(array $data): Quiz
     {
-        $deck = Deck::create(Arr::only($data, Deck::make()->getFillable()));
+        $quiz = Quiz::create(Arr::only($data, Quiz::make()->getFillable()));
 
-        $this->syncTags($deck, $data['tags'] ?? []);
+        $this->syncTags($quiz, $data['tags'] ?? []);
 
         $questions_payload = $data['questions'] ?? [];
 
-        $questions = $this->createQuestions($deck, $questions_payload);
+        $questions = $this->createQuestions($quiz, $questions_payload);
         $answers_to_create = $this->answersToCreate($questions, $questions_payload);
 
         Answer::query()->upsert($answers_to_create, ['body', 'question_id'], ['is_correct']);
 
-        return $deck->load(['questions' => ['answers', 'tags'], 'tags']);
+        return $quiz->load(['questions' => ['answers', 'tags'], 'tags']);
     }
 
-    private function syncTags(Deck|Question $model, array $tags_data): void
+    private function syncTags(Quiz|Question $model, array $tags_data): void
     {
         $tags = collect($tags_data)
             ->map(fn (string $name) => Tag::firstOrCreate(['name' => $name])->id)
@@ -36,13 +36,13 @@ class DeckService
         $model->tags()->sync($tags);
     }
 
-    private function createQuestions(Deck $deck, array $questions_data): Collection
+    private function createQuestions(Quiz $quiz, array $questions_data): Collection
     {
         $questions_to_create = collect($questions_data)
             ->map(fn (array $question) => Arr::except($question, ['answers', 'tags']))
             ->all();
 
-        return $deck->questions()->createMany($questions_to_create);
+        return $quiz->questions()->createMany($questions_to_create);
     }
 
     private function answersToCreate(Collection $questions, array $questions_data): array

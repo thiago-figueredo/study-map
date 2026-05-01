@@ -14,9 +14,9 @@ class Question extends Model
         'body',
     ];
 
-    public function deck(): BelongsTo
+    public function quiz(): BelongsTo
     {
-        return $this->belongsTo(Deck::class);
+        return $this->belongsTo(Quiz::class);
     }
 
     public function answers(): HasMany

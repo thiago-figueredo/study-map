@@ -11,7 +11,7 @@ Context for the **study-map** API under this directory.
 ## Naming
 
 - **Variables** (including parameters and closure captures): `snake_case` (e.g. `$questions_payload`, `$answers_to_create`).
-- **Classes**: `StudlyCase` / PascalCase (e.g. `DeckService`, `CreateDeckRequest`).
+- **Classes**: `StudlyCase` / PascalCase (e.g. `QuizService`, `CreateQuizRequest`).
 - **Functions and methods**: `camelCase` (e.g. `firstOrCreate`, `createMany`).
 
 Apply these rules consistently in new and edited PHP code in this project.
@@ -20,31 +20,31 @@ Apply these rules consistently in new and edited PHP code in this project.
 
 - Laravel registers `routes/api.php` with the **`/api`** prefix (`bootstrap/app.php`).
 - Endpoints today (`routes/api.php`):
-  - `GET /api/decks` — `DeckController@index`
-  - `POST /api/decks` — `DeckController@store`
-- JSON responses use Laravel **JsonResource** wrapping: single resources resolve under a top-level **`data`** key; collections use **`data`** as an array of items (see `ListDecksTest`, `CreateDeckTest`).
+  - `GET /api/quizzes` — `QuizController@index`
+  - `POST /api/quizzes` — `QuizController@store`
+- JSON responses use Laravel **JsonResource** wrapping: single resources resolve under a top-level **`data`** key; collections use **`data`** as an array of items (see `ListQuizzesTest`, `CreateQuizTest`).
 
 ## Domain model
 
-- **Deck** (`name`): `hasMany` **Question**s; `morphToMany` **Tag** via `tag_bind` (`binded` morph name).
-- **Question** (`body`): `belongsTo` Deck; `hasMany` **Answer**s; `morphToMany` Tag via `tag_bind`.
-- **Answer** (`body`, `is_correct`): `belongsTo` Question. Creation for nested payloads is handled in `DeckService` (including `question_id` in persisted rows).
-- **Tag** (`name`): shared table; deck-level tags in `CreateDeckRequest` use `unique:tags,name` on `tags.*` (question-level tag strings are only `string|max:50`).
+- **Quiz** (`name`): `hasMany` **Question**s; `morphToMany` **Tag** via `tag_bind` (`binded` morph name).
+- **Question** (`body`): `belongsTo` Quiz; `hasMany` **Answer**s; `morphToMany` Tag via `tag_bind`.
+- **Answer** (`body`, `is_correct`): `belongsTo` Question. Creation for nested payloads is handled in `QuizService` (including `question_id` in persisted rows).
+- **Tag** (`name`): shared table; quiz-level tags in `CreateQuizRequest` use `unique:tags,name` on `tags.*` (question-level tag strings are only `string|max:50`).
 - Base Eloquent model: `App\Models\Model` — adds `HasFactory`, `HasTimestamps`, and a static `make()` helper.
 
 ## Application patterns
 
-- **Controllers** stay thin: constructor-injected **services** for writes (`DeckController` + `DeckService`).
-- **Validation**: `FormRequest` classes (e.g. `CreateDeckRequest`) — `authorize()` is currently `true` for store.
-- **Responses**: `App\Http\Resources\*` extend `BaseResource`, which centralizes `id`, `created_at`, `updated_at`, `deleted_at` via `formatToArray()`. Nested shapes expose `jsonStructure()` for tests (`DeckResource`, `QuestionResource`, etc.). **TagResource** omits timestamp fields in the serialized output (see `TagResource::toArray`).
-- **Persistence**: `DeckService::create()` creates the deck, syncs deck tags, `createMany` questions, syncs per-question tags when answers are present, then **upserts** answers on `['body', 'question_id']` updating `is_correct`, and returns the deck `load()`ed with `questions.answers`, `questions.tags`, and `tags`.
+- **Controllers** stay thin: constructor-injected **services** for writes (`QuizController` + `QuizService`).
+- **Validation**: `FormRequest` classes (e.g. `CreateQuizRequest`) — `authorize()` is currently `true` for store.
+- **Responses**: `App\Http\Resources\*` extend `BaseResource`, which centralizes `id`, `created_at`, `updated_at`, `deleted_at` via `formatToArray()`. Nested shapes expose `jsonStructure()` for tests (`QuizResource`, `QuestionResource`, etc.). **TagResource** omits timestamp fields in the serialized output (see `TagResource::toArray`).
+- **Persistence**: `QuizService::create()` creates the quiz, syncs quiz tags, `createMany` questions, syncs per-question tags when answers are present, then **upserts** answers on `['body', 'question_id']` updating `is_correct`, and returns the quiz `load()`ed with `questions.answers`, `questions.tags`, and `tags`.
 
 ## Tests
 
-- Run: `composer test` (clears config cache then `php artisan test`).
+- Run: `vendor/bin/pest` (from this `api/` directory; optional filters: `vendor/bin/pest --filter=TestName`).
 - `Tests\TestCase` uses `RefreshDatabase` and overrides `assertDatabaseHas()` to compare only **fillable** attributes on the given model class string (see `TestCase::assertDatabaseHas`).
 - Helpers: `assertDatabaseHasOne`, `assertDatabaseHasMany`.
-- Deck feature tests live under `tests/Feature/Deck/`; URLs use `/api/decks`.
+- Quiz feature tests live under `tests/Feature/Quiz/`; URLs use `/api/quizzes`.
 
 ## Files to touch for common tasks
 
